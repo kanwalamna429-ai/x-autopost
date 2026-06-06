@@ -1,0 +1,344 @@
+‎Auto X Poster - Minimal Version
+‎
+‎Build a simple web application for my personal use that automatically posts my blog articles to X (Twitter).
+‎
+‎The goal is simplicity, low maintenance, and minimal backend complexity.
+‎
+‎Stack
+‎
+‎- Next.js
+‎- TypeScript
+‎- Tailwind CSS
+‎- Supabase
+‎- Vercel
+‎- X (Twitter) API
+‎
+‎No multi-user SaaS features.
+‎
+‎No team accounts.
+‎
+‎No billing.
+‎
+‎No admin panel.
+‎
+‎No user registration.
+‎
+‎Use a single password-protected dashboard or simple login.
+‎
+‎---
+‎
+‎Configuration
+‎
+‎Store credentials in environment variables:
+‎
+‎- Supabase URL
+‎- Supabase Key
+‎- X API Key
+‎- X API Secret
+‎- X Access Token
+‎- X Access Token Secret
+‎
+‎I will provide these values.
+‎
+‎---
+‎
+‎Core Functionality
+‎
+‎Campaigns
+‎
+‎Allow me to create unlimited campaigns.
+‎
+‎Campaign fields:
+‎
+‎- Campaign Name
+‎- Status (Active / Paused)
+‎- Schedule Type
+‎- Posting Frequency
+‎
+‎Examples:
+‎
+‎- Every 1 hours
+‎Every 2 hours
+‎- Every 4 hours
+‎- Every 6 hours
+‎- Daily
+‎- Custom interval
+‎
+‎---
+‎
+‎URL Management
+‎
+‎For each campaign I can add up to 500 URLs.
+‎
+‎Input methods:
+‎
+‎- Paste URLs manually
+‎- Bulk paste (one URL per line)
+‎
+‎Store URLs in Supabase.
+‎
+‎Prevent duplicate URLs within the same campaign.
+‎
+‎---
+‎
+‎Content Extraction
+‎
+‎When a URL is added:
+‎
+‎Automatically fetch:
+‎
+‎- Page title
+‎- Featured image
+‎- Meta description
+‎
+‎Use Open Graph tags when available.
+‎
+‎Store extracted data in Supabase.
+‎
+‎---
+‎
+‎Tweet Generation
+‎
+‎Create tweets automatically using:
+‎
+‎Title
+‎
+‎URL
+‎
+‎Example:
+‎
+‎"10 High Protein Foods For Fat Loss
+‎
+‎https://mywebsite.com/article"
+‎
+‎toggle:
+‎
+‎- Add hashtags
+‎- Add CTA text
+‎
+‎---
+‎
+‎Image Post Creation
+‎
+‎Generate a Twitter/X image automatically.
+‎
+‎Image size:
+‎
+‎1200 x 675
+‎
+‎Layout:
+‎
+‎- Featured image as background
+‎- Article title overlay
+‎- Website URL at bottom
+‎
+‎Use:
+‎
+‎- Next.js OG Image
+‎- Sharp
+‎- Satori
+‎
+‎Store generated images in Supabase Storage.
+‎
+‎Generate image only once per URL.
+‎
+‎Reuse existing image.
+‎
+‎---
+‎
+‎Posting System
+‎
+‎Process:
+‎
+‎1. Find active campaigns.
+‎2. Check if campaign is due for posting.
+‎3. Select next unpublished URL.
+‎4. Create tweet.
+‎5. Upload image.
+‎6. Publish to X.
+‎7. Save tweet ID and tweet URL.
+‎
+‎---
+‎
+‎Posting Modes
+‎
+‎Sequential
+‎
+‎Post URLs in order.
+‎
+‎URL 1 → URL 2 → URL 3
+‎
+‎Random
+‎
+‎Choose a random unpublished URL.
+‎
+‎---
+‎
+‎Recycle Option
+‎
+‎Toggle:
+‎
+‎- Recycle URLs after all are posted
+‎- Stop campaign when all URLs are posted
+‎
+‎---
+‎
+‎Dashboard
+‎
+‎Simple dashboard showing:
+‎
+‎Campaign List
+‎
+‎- Campaign Name
+‎- Status
+‎- Number of URLs
+‎- Next Scheduled Post
+‎
+‎Campaign Details
+‎
+‎- URLs
+‎- Published URLs
+‎- Pending URLs
+‎- Failed URLs
+‎
+‎Post History
+‎
+‎Show:
+‎
+‎- Tweet ID
+‎- Tweet URL
+‎- Date Posted
+‎- Campaign
+‎
+‎---
+‎
+‎Database Tables
+‎
+‎campaigns
+‎
+‎- id
+‎- name
+‎- status
+‎- frequency_hours
+‎- recycle_enabled
+‎- posting_mode
+‎- last_posted_at
+‎- created_at
+‎
+‎urls
+‎
+‎- id
+‎- campaign_id
+‎- url
+‎- title
+‎- image_url
+‎- description
+‎- generated_image_url
+‎- posted
+‎- posted_at
+‎
+‎posts
+‎
+‎- id
+‎- campaign_id
+‎- url_id
+‎- tweet_id
+‎- tweet_url
+‎- posted_at
+‎- status
+‎
+‎---
+‎
+‎Security
+‎
+‎Keep everything server-side.
+‎
+‎Never expose X credentials.
+‎
+‎Protect dashboard with a simple password.
+‎
+‎No user management required.
+‎
+‎---
+‎
+‎UI
+‎
+‎Clean and simple.
+‎
+‎Pages:
+‎
+‎- Dashboard
+‎- Campaigns
+‎- Campaign Details
+‎- Settings
+‎
+‎Responsive design.
+‎
+‎Dark mode optional.
+‎
+‎---
+‎
+‎Final Goal
+‎
+‎A lightweight personal tool deployed on Vercel that:
+‎
+‎- Stores campaigns in Supabase
+‎- Accepts up to 50 URLs per campaign
+‎- Extracts title and image automatically
+‎- Generates an image post
+‎- Publishes automatically to X based on schedule
+‎- Tracks posting history
+‎- Requires minimal maintenance and minimal backend complexity
+‎
+‎X Account Authorization
+‎
+‎The application must support connecting my X (Twitter) account using X OAuth 2.0.
+‎
+‎Connection Flow
+‎
+‎1. Click "Connect X Account".
+‎2. Redirect to X authorization page.
+‎3. Approve permissions.
+‎4. Return to application callback URL.
+‎5. Store access token and refresh token securely in Supabase.
+‎6. Display connected account information:
+‎   - Username
+‎   - Display Name
+‎   - Profile Image
+‎   - Connection Status
+‎
+‎Account Management
+‎
+‎Allow:
+‎
+‎- Connect Account
+‎- Disconnect Account
+‎- Reconnect Account
+‎- Test Connection
+‎
+‎Token Handling
+‎
+‎- Store tokens securely in Supabase.
+‎- Automatically refresh expired tokens.
+‎- Never expose tokens to the frontend.
+‎- All posting operations must occur server-side.
+‎
+‎Posting Permissions
+‎
+‎Request only the permissions required for:
+‎
+‎- Reading account information
+‎- Posting tweets
+‎- Uploading media
+‎
+‎Connected Account Display
+‎
+‎Show:
+‎
+‎- Connected X username
+‎- Account avatar
+‎- Authorization status
+‎- Date connected
+‎
+‎Since this is a personal-use tool, support only one connected X account.
+‎

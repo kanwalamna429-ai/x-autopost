@@ -3,20 +3,31 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Auto X Poster API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: campaigns
+    description: Campaign management
+  - name: urls
+    description: URL management
+  - name: posts
+    description: Post history
+  - name: xAccount
+    description: X account connection
+  - name: dashboard
+    description: Dashboard stats
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +35,372 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login with dashboard password
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatus"
+        "401":
+          description: Invalid password
+
+  /auth/logout:
+    post:
+      operationId: logout
+      tags: [auth]
+      summary: Logout
+      responses:
+        "200":
+          description: Logged out
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatus"
+
+  /auth/status:
+    get:
+      operationId: getAuthStatus
+      tags: [auth]
+      summary: Check authentication status
+      responses:
+        "200":
+          description: Auth status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthStatus"
+
+  /campaigns:
+    get:
+      operationId: getCampaigns
+      tags: [campaigns]
+      summary: List all campaigns
+      responses:
+        "200":
+          description: List of campaigns
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Campaign"
+    post:
+      operationId: createCampaign
+      tags: [campaigns]
+      summary: Create a campaign
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+
+  /campaigns/{id}:
+    get:
+      operationId: getCampaign
+      tags: [campaigns]
+      summary: Get campaign by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+        "404":
+          description: Not found
+    patch:
+      operationId: updateCampaign
+      tags: [campaigns]
+      summary: Update a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CampaignPatch"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Campaign"
+    delete:
+      operationId: deleteCampaign
+      tags: [campaigns]
+      summary: Delete a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /campaigns/{id}/stats:
+    get:
+      operationId: getCampaignStats
+      tags: [campaigns]
+      summary: Get campaign URL stats
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Campaign stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignStats"
+
+  /campaigns/{id}/trigger:
+    post:
+      operationId: triggerCampaign
+      tags: [campaigns]
+      summary: Manually trigger posting for a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TriggerResult"
+
+  /campaigns/{id}/urls:
+    get:
+      operationId: getCampaignUrls
+      tags: [urls]
+      summary: List URLs for a campaign
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: URLs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CampaignUrl"
+    post:
+      operationId: addUrls
+      tags: [urls]
+      summary: Add URLs to a campaign (bulk)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UrlBulkInput"
+      responses:
+        "201":
+          description: Added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UrlAddResult"
+
+  /campaigns/{campaignId}/urls/{urlId}:
+    delete:
+      operationId: deleteUrl
+      tags: [urls]
+      summary: Delete a URL from a campaign
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: urlId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /campaigns/{campaignId}/urls/{urlId}/extract:
+    post:
+      operationId: extractUrl
+      tags: [urls]
+      summary: Re-extract content from a URL
+      parameters:
+        - name: campaignId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: urlId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Extracted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignUrl"
+
+  /posts:
+    get:
+      operationId: getPosts
+      tags: [posts]
+      summary: Get all post history
+      responses:
+        "200":
+          description: Post history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Post"
+
+  /x-account:
+    get:
+      operationId: getXAccount
+      tags: [xAccount]
+      summary: Get connected X account info
+      responses:
+        "200":
+          description: X account status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/XAccount"
+    delete:
+      operationId: disconnectXAccount
+      tags: [xAccount]
+      summary: Disconnect the X account
+      responses:
+        "200":
+          description: Disconnected
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/XAccount"
+
+  /x-account/connect:
+    get:
+      operationId: connectXAccount
+      tags: [xAccount]
+      summary: Start X OAuth flow — returns redirect URL
+      responses:
+        "200":
+          description: OAuth URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OAuthUrl"
+
+  /x-account/callback:
+    get:
+      operationId: xAccountCallback
+      tags: [xAccount]
+      summary: X OAuth callback
+      parameters:
+        - name: code
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+        - name: state
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+        - name: error
+          in: query
+          required: false
+          schema:
+            type: ["string", "null"]
+      responses:
+        "302":
+          description: Redirect to dashboard
+
+  /x-account/test:
+    post:
+      operationId: testXAccount
+      tags: [xAccount]
+      summary: Test the X account connection
+      responses:
+        "200":
+          description: Test result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TestResult"
+
+  /dashboard/stats:
+    get:
+      operationId: getDashboardStats
+      tags: [dashboard]
+      summary: Get global dashboard stats
+      responses:
+        "200":
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
 components:
   schemas:
     HealthStatus:
@@ -31,6 +408,248 @@ components:
       properties:
         status:
           type: string
-      required:
-        - status
+      required: [status]
 
+    LoginInput:
+      type: object
+      required: [password]
+      properties:
+        password:
+          type: string
+
+    AuthStatus:
+      type: object
+      required: [authenticated]
+      properties:
+        authenticated:
+          type: boolean
+
+    Campaign:
+      type: object
+      required: [id, name, status, frequencyHours, recycleEnabled, postingMode, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, paused]
+        frequencyHours:
+          type: number
+        recycleEnabled:
+          type: boolean
+        postingMode:
+          type: string
+          enum: [sequential, random]
+        addHashtags:
+          type: boolean
+        ctaText:
+          type: ["string", "null"]
+        lastPostedAt:
+          type: ["string", "null"]
+        nextPostAt:
+          type: ["string", "null"]
+        urlCount:
+          type: integer
+        createdAt:
+          type: string
+
+    CampaignInput:
+      type: object
+      required: [name, frequencyHours, postingMode]
+      properties:
+        name:
+          type: string
+          minLength: 1
+        status:
+          type: string
+          enum: [active, paused]
+        frequencyHours:
+          type: number
+        recycleEnabled:
+          type: boolean
+        postingMode:
+          type: string
+          enum: [sequential, random]
+        addHashtags:
+          type: boolean
+        ctaText:
+          type: ["string", "null"]
+
+    CampaignPatch:
+      type: object
+      properties:
+        name:
+          type: string
+        status:
+          type: string
+          enum: [active, paused]
+        frequencyHours:
+          type: number
+        recycleEnabled:
+          type: boolean
+        postingMode:
+          type: string
+          enum: [sequential, random]
+        addHashtags:
+          type: boolean
+        ctaText:
+          type: ["string", "null"]
+
+    CampaignStats:
+      type: object
+      required: [total, pending, posted, failed]
+      properties:
+        total:
+          type: integer
+        pending:
+          type: integer
+        posted:
+          type: integer
+        failed:
+          type: integer
+
+    TriggerResult:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        tweetUrl:
+          type: ["string", "null"]
+
+    CampaignUrl:
+      type: object
+      required: [id, campaignId, url, posted, createdAt]
+      properties:
+        id:
+          type: integer
+        campaignId:
+          type: integer
+        url:
+          type: string
+        title:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        description:
+          type: ["string", "null"]
+        generatedImageUrl:
+          type: ["string", "null"]
+        posted:
+          type: boolean
+        postedAt:
+          type: ["string", "null"]
+        failed:
+          type: boolean
+        failReason:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+
+    UrlBulkInput:
+      type: object
+      required: [urls]
+      properties:
+        urls:
+          type: array
+          items:
+            type: string
+
+    UrlAddResult:
+      type: object
+      required: [added, duplicates, total]
+      properties:
+        added:
+          type: integer
+        duplicates:
+          type: integer
+        total:
+          type: integer
+        urls:
+          type: array
+          items:
+            $ref: "#/components/schemas/CampaignUrl"
+
+    Post:
+      type: object
+      required: [id, campaignId, postedAt, status]
+      properties:
+        id:
+          type: integer
+        campaignId:
+          type: integer
+        campaignName:
+          type: ["string", "null"]
+        urlId:
+          type: ["integer", "null"]
+        articleUrl:
+          type: ["string", "null"]
+        articleTitle:
+          type: ["string", "null"]
+        tweetId:
+          type: ["string", "null"]
+        tweetUrl:
+          type: ["string", "null"]
+        postedAt:
+          type: string
+        status:
+          type: string
+          enum: [success, failed]
+        errorMessage:
+          type: ["string", "null"]
+
+    XAccount:
+      type: object
+      required: [connected]
+      properties:
+        connected:
+          type: boolean
+        username:
+          type: ["string", "null"]
+        displayName:
+          type: ["string", "null"]
+        profileImageUrl:
+          type: ["string", "null"]
+        connectedAt:
+          type: ["string", "null"]
+
+    OAuthUrl:
+      type: object
+      required: [url]
+      properties:
+        url:
+          type: string
+
+    TestResult:
+      type: object
+      required: [success, message]
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+
+    DashboardStats:
+      type: object
+      required: [totalCampaigns, activeCampaigns, totalUrls, totalPostsToday, totalPostsAllTime, recentPosts]
+      properties:
+        totalCampaigns:
+          type: integer
+        activeCampaigns:
+          type: integer
+        totalUrls:
+          type: integer
+        pendingUrls:
+          type: integer
+        totalPostsToday:
+          type: integer
+        totalPostsAllTime:
+          type: integer
+        recentPosts:
+          type: array
+          items:
+            $ref: "#/components/schemas/Post"
