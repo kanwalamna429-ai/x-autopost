@@ -15,7 +15,7 @@ import { format } from "date-fns";
 export function Settings() {
   const { data: account, isLoading } = useGetXAccount({ query: { queryKey: getGetXAccountQueryKey() } });
   
-  const connectX = useConnectXAccount();
+  const connectX = useConnectXAccount({ query: { enabled: false } });
   const disconnectX = useDisconnectXAccount();
   const testX = useTestXAccount();
   

@@ -152,7 +152,12 @@ export async function runScheduler(): Promise<void> {
     if (!isDue) continue;
 
     logger.info({ campaignId: campaign.id, name: campaign.name }, "Scheduler: posting for campaign");
-    await postForCampaign(campaign.id);
+    const result = await postForCampaign(campaign.id);
+    if (!result.success) {
+      logger.warn({ campaignId: campaign.id, message: result.message }, "Scheduler: post failed");
+    } else {
+      logger.info({ campaignId: campaign.id, tweetUrl: result.tweetUrl }, "Scheduler: post succeeded");
+    }
   }
 }
 

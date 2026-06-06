@@ -1,6 +1,7 @@
 import { Router, type IRouter } from "express";
 import { db, campaignsTable, urlsTable } from "@workspace/db";
 import { eq, count, sql } from "drizzle-orm";
+import { logger } from "../lib/logger";
 import {
   CreateCampaignBody,
   UpdateCampaignBody,
@@ -52,14 +53,18 @@ router.post("/campaigns", async (req, res): Promise<void> => {
     return;
   }
 
+  const frequencyHours = parsed.data.frequencyHours;
+  const nextPostAt = new Date(Date.now() + frequencyHours * 60 * 60 * 1000);
+
   const [campaign] = await db.insert(campaignsTable).values({
     name: parsed.data.name,
     status: parsed.data.status ?? "active",
-    frequencyHours: parsed.data.frequencyHours,
+    frequencyHours,
     recycleEnabled: parsed.data.recycleEnabled ?? false,
     postingMode: parsed.data.postingMode,
     addHashtags: parsed.data.addHashtags ?? false,
     ctaText: parsed.data.ctaText ?? null,
+    nextPostAt,
   }).returning();
 
   res.status(201).json({
@@ -72,7 +77,7 @@ router.post("/campaigns", async (req, res): Promise<void> => {
     addHashtags: campaign.addHashtags,
     ctaText: campaign.ctaText ?? null,
     lastPostedAt: null,
-    nextPostAt: null,
+    nextPostAt: campaign.nextPostAt?.toISOString() ?? null,
     urlCount: 0,
     createdAt: campaign.createdAt.toISOString(),
   });
@@ -221,6 +226,11 @@ router.post("/campaigns/:id/trigger", async (req, res): Promise<void> => {
   }
 
   const result = await postForCampaign(params.data.id);
+  if (!result.success) {
+    logger.warn({ campaignId: params.data.id, message: result.message }, "Trigger: post failed");
+  } else {
+    logger.info({ campaignId: params.data.id, tweetUrl: result.tweetUrl }, "Trigger: post succeeded");
+  }
   res.json(result);
 });
 
