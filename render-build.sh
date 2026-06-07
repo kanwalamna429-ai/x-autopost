@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "==> Installing pnpm"
-npm install -g pnpm
+echo "==> Node $(node --version), npm $(npm --version)"
+
+echo "==> Enabling corepack and installing pnpm"
+corepack enable
+corepack prepare pnpm@10.26.1 --activate
 
 echo "==> Installing dependencies"
-pnpm install --frozen-lockfile
+pnpm install --no-frozen-lockfile
 
 echo "==> Building shared libs"
 pnpm run typecheck:libs
