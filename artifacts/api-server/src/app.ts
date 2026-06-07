@@ -9,6 +9,7 @@ import { logger } from "./lib/logger";
 import { startScheduler } from "./lib/scheduler";
 
 const app: Express = express();
+app.set("trust proxy", 1);
 
 app.use(
   pinoHttp({
