@@ -1,6 +1,6 @@
 import { 
   useGetXAccount, getGetXAccountQueryKey,
-  useConnectXAccount,
+  useConnectXAccount, getConnectXAccountQueryKey,
   useDisconnectXAccount,
   useTestXAccount
 } from "@workspace/api-client-react";
@@ -15,7 +15,7 @@ import { format } from "date-fns";
 export function Settings() {
   const { data: account, isLoading } = useGetXAccount({ query: { queryKey: getGetXAccountQueryKey() } });
   
-  const connectX = useConnectXAccount({ query: { enabled: false } });
+  const connectX = useConnectXAccount({ query: { enabled: false, queryKey: getConnectXAccountQueryKey() } });
   const disconnectX = useDisconnectXAccount();
   const testX = useTestXAccount();
   

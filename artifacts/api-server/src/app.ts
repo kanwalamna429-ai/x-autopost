@@ -1,3 +1,5 @@
+import path from "path";
+import fs from "fs";
 import express, { type Express } from "express";
 import cors from "cors";
 import pinoHttp from "pino-http";
@@ -44,11 +46,30 @@ app.use(session({
     secure: process.env.NODE_ENV === "production",
     httpOnly: true,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    sameSite: "lax",
   },
 }));
 
 app.use("/api", router);
+
+// Serve the built React frontend in production (single-service deployment)
+if (process.env.NODE_ENV === "production") {
+  const frontendDist = path.resolve(
+    __dirname,
+    "../../auto-x-poster/dist/public",
+  );
+
+  if (fs.existsSync(frontendDist)) {
+    app.use(express.static(frontendDist));
+    // SPA fallback — let React Router handle all non-API routes
+    app.get("*", (_req, res) => {
+      res.sendFile(path.join(frontendDist, "index.html"));
+    });
+    logger.info({ frontendDist }, "Serving frontend static files");
+  } else {
+    logger.warn({ frontendDist }, "Frontend dist not found — static serving skipped");
+  }
+}
 
 startScheduler();
 

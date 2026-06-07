@@ -5,4 +5,4 @@ generated = []
 id = "JK65kzX53PQAL8eGHxgAC"
 uri = "file://DEPLOY.md"
 type = "text"
-title = "Deployment Guide — Vercel + Render"
+title = "Render Deployment Guide"
